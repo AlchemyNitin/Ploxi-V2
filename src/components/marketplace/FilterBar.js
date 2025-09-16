@@ -196,7 +196,8 @@ const FilterBar = ({
             <div className="flex flex-wrap gap-2">
               {searchTerm && (
                 <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm">
-                  <span>Search: "{searchTerm}"</span>
+                 <span>Search: &quot;{searchTerm}&quot;</span>
+
                   <button
                     onClick={() => setSearchTerm('')}
                     className="text-blue-600 hover:text-blue-800"

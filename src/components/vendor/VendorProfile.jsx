@@ -238,7 +238,8 @@ const VendorProfile = ({ vendor }) => {
                           <h3 className="font-semibold text-gray-900">{study.clientName}</h3>
                           <span className="text-sm text-green-600 font-medium">{study.result}</span>
                         </div>
-                        <p className="text-gray-700 italic mb-3">"{study.testimonial}"</p>
+                        <p className="text-gray-700 italic mb-3">&quot;{study.testimonial}&quot;</p>
+
                         <p className="text-sm text-gray-600">
                           <strong>Project:</strong> {study.project}
                         </p>

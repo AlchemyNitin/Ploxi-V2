@@ -73,7 +73,7 @@ export default function LandingPage() {
               Navigate Your Sustainability Journey
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Get personalized ESG insights, discover verified solution providers, and accelerate your organization's 
+              Get personalized ESG insights, discover verified solution providers, and accelerate your organization&apos;s 
               sustainability transformation with our intelligent consulting platform.
             </p>
             

@@ -163,9 +163,9 @@ const DashboardContent = ({ config, params }) => {
             <span className="text-gray-400">/</span>
             <span className="text-green-600 font-medium">Dashboard</span>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-700">{location.name}</span>
+            <span className="text-gray-700">{location?.name}</span>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-700">{industry.name}</span>
+            <span className="text-gray-700">{industry?.name}</span>
           </nav>
         </div>
       </div>

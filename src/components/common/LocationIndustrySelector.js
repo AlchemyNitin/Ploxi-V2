@@ -331,7 +331,7 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
           </div>
           <div className="mt-4 p-4 bg-white/60 rounded-lg">
             <p className="text-sm text-green-800 text-center">
-              Your personalized dashboard is being prepared. You'll be automatically redirected in a moment...
+              Your personalized dashboard is being prepared. You&apos;ll be automatically redirected in a moment...
             </p>
           </div>
         </div>
