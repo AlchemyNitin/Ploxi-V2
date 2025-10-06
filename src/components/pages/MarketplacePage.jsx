@@ -1,4 +1,3 @@
-// src/components/pages/MarketplacePage.jsx
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -239,6 +238,8 @@ const MarketplacePage = () => {
 
   // Handle URL parameters for filters (like "REDUCE THIS" from dashboard)
   useEffect(() => {
+    if (!searchParams) return; // Guard against missing searchParams
+    
     const filter = searchParams.get('filter');
     const clear = searchParams.get('clear');
     
@@ -323,7 +324,7 @@ const MarketplacePage = () => {
                 <Icon className="w-5 h-5" />
                 <div className="text-left">
                   <div className="font-semibold">{tab.name}</div>
-                  <div className="text-xs opacity-100">{tab.count} items • {tab.description}</div>
+                  <div className="text-xs opacity-75">{tab.count} items • {tab.description}</div>
                 </div>
               </button>
             );
