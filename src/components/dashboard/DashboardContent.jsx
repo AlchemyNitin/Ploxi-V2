@@ -16,7 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 
-import DashboardGrid from '@/components/dashboard/DashboardGrid';
+import EnhancedDashboardGrid from '@/components/dashboard/EnhancedDashboardGrid';
 import MarketplaceGrid from '@/components/marketplace/MarketplaceGrid';
 import { generateSampleMetrics } from '@/utils/generateSampleMetrics';
 
@@ -255,7 +255,7 @@ const DashboardContent = ({ config, params }) => {
               </button>
             </div>
           ) : (
-            <DashboardGrid
+            <EnhancedDashboardGrid
               selectedFramework={framework}
               selectedIndustry={industry}
               metrics={metrics}

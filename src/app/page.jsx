@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import LocationIndustrySelector from '@/components/common/LocationIndustrySelector';
 
 export default function LandingPage() {
@@ -38,7 +39,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -61,6 +62,16 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
+
+            {/* Registration CTA in Header */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link
+                href="/register"
+                className="inline-flex items-center px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+              >
+                Get Started
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -73,9 +84,25 @@ export default function LandingPage() {
               Navigate Your Sustainability Journey
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Get personalized ESG insights, discover verified solution providers, and accelerate your organization&apos;s 
+              Get personalized ESG insights, discover verified solution providers, and accelerate your organization's 
               sustainability transformation with our intelligent consulting platform.
             </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link
+                href="/register"
+                className="inline-flex items-center px-8 py-4 bg-green-600 text-white rounded-xl font-semibold text-lg hover:bg-green-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+              >
+                Start Your Corporate Registration
+              </Link>
+              <button
+                onClick={() => document.getElementById('quick-start').scrollIntoView({ behavior: 'smooth' })}
+                className="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold text-lg hover:border-gray-400 hover:bg-gray-50 transition-all"
+              >
+                Quick Assessment
+              </button>
+            </div>
             
             {/* Feature highlights */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -112,10 +139,10 @@ export default function LandingPage() {
           </div>
 
           {/* Configuration Section */}
-          <div className="max-w-4xl mx-auto">
+          <div id="quick-start" className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Get Started in 3 Simple Steps
+                Quick Start Assessment
               </h3>
               <div className="flex justify-center items-center space-x-8 mb-8">
                 <div className="flex items-center space-x-2">
@@ -133,6 +160,15 @@ export default function LandingPage() {
                   <span className="text-gray-700">Pick Framework</span>
                 </div>
               </div>
+              <p className="text-gray-600 mb-4">
+                For a full corporate account with data persistence and expert support,
+              </p>
+              <Link
+                href="/register"
+                className="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Complete Corporate Registration →
+              </Link>
             </div>
 
             {/* Navigation Loading State */}
@@ -155,7 +191,7 @@ export default function LandingPage() {
             {/* Call to Action */}
             <div className="text-center">
               <p className="text-gray-600 mb-4">
-                Complete your configuration above to unlock your personalized sustainability dashboard
+                Complete your configuration above for an instant preview, or register for full access
               </p>
             </div>
           </div>
