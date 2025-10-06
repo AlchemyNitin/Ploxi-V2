@@ -271,7 +271,7 @@ const ProcurementGrid = ({ items = [], vendors = [] }) => {
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
             {filters.search && (
               <span className="inline-flex items-center space-x-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
-                <span>Search: "{filters.search}"</span>
+                <span>Search: &quot;{filters.search}&quot;</span>
                 <button onClick={() => setFilters(prev => ({ ...prev, search: '' }))}>
                   <X className="w-3 h-3" />
                 </button>

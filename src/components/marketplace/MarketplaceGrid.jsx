@@ -198,7 +198,7 @@ const MarketplaceGrid = ({
                 Filters Applied from Dashboard
               </h4>
               <p className="text-sm text-green-700">
-                Showing results based on your "REDUCE THIS" selection. 
+                Showing results based on your &quot;REDUCE THIS&quot; selection. 
                 {filters.types.length > 0 && ` Filtered by: ${filters.types.join(', ')}`}
               </p>
             </div>

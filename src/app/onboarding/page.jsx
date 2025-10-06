@@ -136,7 +136,7 @@ export default function OnboardingPage() {
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gray-700">
-                <strong>For now:</strong> You can proceed with manual entry and we'll upgrade 
+                <strong>For now:</strong> You can proceed with manual entry and we will upgrade 
                 your account automatically when this feature becomes available.
               </p>
             </div>
@@ -178,7 +178,7 @@ export default function OnboardingPage() {
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gray-700">
-                <strong>Contact details:</strong> We'll use the email address you provided 
+                <strong>Contact details:</strong> We will use the email address you provided 
                 ({registrationData.email}) to schedule your consultation.
               </p>
             </div>
@@ -392,7 +392,7 @@ export default function OnboardingPage() {
               <div className="flex items-center space-x-2 text-gray-700">
                 <Check className="w-4 h-4 text-green-600" />
                 <span className="text-sm">
-                  You've selected: <strong>
+                  You have selected: <strong>
                     {selectedOption === 'auto' ? 'Automatic Integration' : 'Manual Entry with Expert Support'}
                   </strong>
                 </span>

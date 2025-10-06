@@ -280,7 +280,7 @@ const EnhancedDashboardGrid = ({
               </LineChart>
             </ResponsiveContainer>
             <p className="text-xs text-gray-500 mt-2">
-              * Data inspired by Microsoft's 2023 Environmental Sustainability Report
+              * Data inspired by Microsoft&apos;s 2023 Environmental Sustainability Report
             </p>
           </div>
 
@@ -340,7 +340,7 @@ const EnhancedDashboardGrid = ({
               </AreaChart>
             </ResponsiveContainer>
             <p className="text-xs text-gray-500 mt-2">
-              * Modeled after Microsoft's carbon negative commitment by 2030
+              * Modeled after Microsoft&apos;s carbon negative commitment by 2030
             </p>
           </div>
 
@@ -378,7 +378,7 @@ const EnhancedDashboardGrid = ({
               </PieChart>
             </ResponsiveContainer>
             <p className="text-xs text-gray-500 mt-2">
-              * Based on Microsoft's renewable energy procurement strategy
+              * Based on Microsoft&apos;s renewable energy procurement strategy
             </p>
           </div>
 
@@ -436,7 +436,7 @@ const EnhancedDashboardGrid = ({
                       {category} Metrics
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {groupedMetrics[category].length} metrics • Click "REDUCE THIS" to find solutions
+                      {groupedMetrics[category].length} metrics • Click &quot;REDUCE THIS&quot; to find solutions
                     </p>
                   </div>
                 </div>

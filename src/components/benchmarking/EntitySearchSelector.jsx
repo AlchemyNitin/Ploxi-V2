@@ -202,7 +202,7 @@ const EntitySearchSelector = ({
           </h4>
           {searchQuery && (
             <span className="text-sm text-gray-600">
-              Showing results for "{searchQuery}"
+              Showing results for &quot;{searchQuery}&quot;
             </span>
           )}
         </div>
