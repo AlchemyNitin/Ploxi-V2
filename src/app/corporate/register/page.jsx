@@ -405,7 +405,7 @@ export default function RegistrationPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="employees" className="block text-sm font-medium text-gray-900 mb-2">
+                  <label htmlFor="employees" className="block text-sm font-medium text-gray-700 mb-2">
                     Number of Employees
                   </label>
                   <select

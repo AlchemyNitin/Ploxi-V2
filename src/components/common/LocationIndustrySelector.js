@@ -230,7 +230,7 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
       </div>
 
       {/* Progress Indicator */}
-      <div className="flex justify-center items-center space-x-4 mb-8">
+      {/* <div className="flex justify-center items-center space-x-4 mb-8">
         <div className={`flex items-center space-x-2 ${selectedLocation ? 'text-green-600' : 'text-gray-400'}`}>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             selectedLocation ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
@@ -259,14 +259,14 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
           </div>
           <span className="text-sm font-medium">Framework</span>
         </div>
-      </div>
+      </div> */}
 
       {/* Selector Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Location Selector */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            Geographic Location
+            (1) Geographic Location
           </label>
           <Dropdown
             type="location"
@@ -279,7 +279,7 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
         {/* Industry Selector */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            Industry Sector
+            (2) Industry Sector
           </label>
           <Dropdown
             type="industry"
@@ -292,7 +292,7 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
         {/* Framework Selector */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            Reporting Framework
+            (3) Reporting Framework
           </label>
           <Dropdown
             type="framework"
@@ -338,7 +338,7 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
       )}
 
       {/* Progress Messages */}
-      {!isSelectionComplete && (
+      {/* {!isSelectionComplete && (
         <div className="text-center">
           <p className="text-gray-600">
             {!selectedLocation && "👆 Start by selecting your geographic location"}
@@ -346,7 +346,7 @@ const LocationIndustrySelector = ({ onSelectionChange, className = "" }) => {
             {selectedLocation && selectedIndustry && !selectedFramework && "👆 Finally, pick your reporting framework"}
           </p>
         </div>
-      )}
+      )} */}
 
       {/* Click outside to close dropdowns */}
       {openDropdown && (

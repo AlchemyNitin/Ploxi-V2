@@ -85,7 +85,7 @@ export default function OnboardingPage() {
 
     // Navigate to dashboard with proper URL structure
     const { location, industry, framework } = registrationData;
-    router.push(`/dashboard/${location.id}/${industry.id}/${framework.id}`);
+    router.push(`/corporate/dashboard/${location.id}/${industry.id}/${framework.id}`);
   };
 
   if (!registrationData) {
