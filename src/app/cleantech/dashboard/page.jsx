@@ -194,7 +194,7 @@ export default function VendorDashboard() {
                   priority
                 />
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">Ploxi Clean Tech</h1>
+                  <h1 className="text-xl font-bold text-gray-900">Ploxi</h1>
                   <p className="text-xs text-gray-600">{vendorData.companyName}</p>
                 </div>
               </div>

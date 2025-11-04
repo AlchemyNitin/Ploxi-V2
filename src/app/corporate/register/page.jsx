@@ -1,533 +1,584 @@
 'use client'
+import OTPModal from '@/components/OTPModal';
+
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
-  Building, 
-  MapPin, 
-  Users, 
+  Building2, 
   Mail, 
   Phone, 
-  User,
+  Globe, 
+  User, 
+  Briefcase,
   ArrowRight,
-  ChevronDown,
-  CheckCircle 
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
-// Mock data - same as your LocationIndustrySelector
-const mockLocations = [
-  { id: "india", name: "India", code: "IN", reportingFrameworks: ["BRSR", "GRI"] },
-  { id: "usa", name: "United States", code: "US", reportingFrameworks: ["SASB", "GRI", "TCFD"] },
-  { id: "eu", name: "European Union", code: "EU", reportingFrameworks: ["TCFD", "ESRS", "GRI"] },
-  { id: "uae", name: "United Arab Emirates", code: "AE", reportingFrameworks: ["GRI", "TCFD"] }
-];
 
-const mockIndustries = [
-  { id: "healthcare", name: "Healthcare" },
-  { id: "real_estate", name: "Real Estate" },
-  { id: "cement", name: "Cement" },
-  { id: "steel", name: "Steel" },
-  { id: "manufacturing", name: "Manufacturing" },
-  { id: "logistics", name: "Logistics" },
-  { id: "automotive", name: "Automotive" },
-  { id: "education", name: "Education" },
-  { id: "finance", name: "Finance" },
-  { id: "it_datacenter", name: "IT / Data Center" }
-];
 
-const allFrameworks = [
-  { id: "brsr", name: "BRSR", fullName: "Business Responsibility and Sustainability Reporting" },
-  { id: "gri", name: "GRI", fullName: "Global Reporting Initiative" },
-  { id: "sasb", name: "SASB", fullName: "Sustainability Accounting Standards Board" },
-  { id: "tcfd", name: "TCFD", fullName: "Task Force on Climate-related Financial Disclosures" },
-  { id: "esrs", name: "ESRS", fullName: "European Sustainability Reporting Standards" }
-];
-
-export default function RegistrationPage() {
+export default function CorporateRegistration() {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Company information state
-  const [companyInfo, setCompanyInfo] = useState({
+  const [showOTPModal, setShowOTPModal] = useState(false);
+const [isVerifying, setIsVerifying] = useState(false);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    fullName: '',
+    designation: '',
     companyName: '',
-    contactPerson: '',
+    website: '',
+    industrySector: '',
+    customIndustry: '', // For "Other" option
     email: '',
-    phone: '',
-    employees: ''
+    countryCode: '+91',
+    phone: ''
   });
 
-  // ESG configuration state
-  const [esgConfig, setEsgConfig] = useState({
-    location: null,
-    industry: null,
-    framework: null
-  });
-
-  const [availableFrameworks, setAvailableFrameworks] = useState([]);
-  const [openDropdown, setOpenDropdown] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Update available frameworks when location changes
-  React.useEffect(() => {
-    if (esgConfig.location) {
-      setIsLoading(true);
-      setTimeout(() => {
-        const location = mockLocations.find(loc => loc.id === esgConfig.location.id);
-        const frameworks = allFrameworks.filter(framework => 
-          location.reportingFrameworks.includes(framework.name)
-        );
-        setAvailableFrameworks(frameworks);
-        setIsLoading(false);
-      }, 300);
-    } else {
-      setAvailableFrameworks([]);
-      setEsgConfig(prev => ({ ...prev, framework: null }));
-    }
-  }, [esgConfig.location]);
+  // Industry sectors
+  const INDUSTRY_SECTORS = [
+    'Real Estate Developer',
+    'Oil & Gas',
+    'Steel & Cement',
+    'Manufacturing',
+    'Logistics',
+    'IT/Data Centre',
+    'Healthcare',
+    'Education',
+    'Other'
+  ];
 
-  const handleCompanyInfoChange = (e) => {
-    const { name, value } = e.target;
-    setCompanyInfo(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
-    }
-  };
+  // Country codes
+  const COUNTRY_CODES = [
+    { code: '+91', country: 'India', flag: '🇮🇳' },
+    { code: '+971', country: 'UAE', flag: '🇦🇪' },
+    { code: '+1', country: 'USA', flag: '🇺🇸' },
+    { code: '+44', country: 'UK', flag: '🇬🇧' },
+    { code: '+61', country: 'Australia', flag: '🇦🇺' },
+    { code: '+33', country: 'France', flag: '🇫🇷' },
+    { code: '+49', country: 'Germany', flag: '🇩🇪' }
+  ];
 
-  const handleEsgSelect = (type, item) => {
-    let newConfig = { ...esgConfig };
-
-    switch (type) {
-      case 'location':
-        newConfig.location = item;
-        newConfig.framework = null; // Reset framework when location changes
-        break;
-      case 'industry':
-        newConfig.industry = item;
-        break;
-      case 'framework':
-        newConfig.framework = item;
-        break;
-    }
-
-    setEsgConfig(newConfig);
-    setOpenDropdown(null);
-    
-    // Clear error
-    if (errors[type]) {
-      setErrors(prev => ({ ...prev, [type]: null }));
-    }
-  };
-
+  // Validation
   const validateForm = () => {
     const newErrors = {};
 
-    // Company info validation
-    if (!companyInfo.companyName.trim()) newErrors.companyName = 'Company name is required';
-    if (!companyInfo.contactPerson.trim()) newErrors.contactPerson = 'Contact person is required';
-    if (!companyInfo.email.trim()) newErrors.email = 'Email is required';
-    if (companyInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyInfo.email)) {
+    // Full Name validation
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      newErrors.fullName = 'Name must be at least 2 characters';
+    }
+
+    // Designation validation
+    if (!formData.designation.trim()) {
+      newErrors.designation = 'Designation is required';
+    }
+
+    // Company Name validation
+    if (!formData.companyName.trim()) {
+      newErrors.companyName = 'Company name is required';
+    } else if (formData.companyName.trim().length < 2) {
+      newErrors.companyName = 'Company name must be at least 2 characters';
+    }
+
+    // Website validation (optional but validate format if provided)
+    if (formData.website && !isValidUrl(formData.website)) {
+      newErrors.website = 'Please enter a valid URL (e.g., https://example.com)';
+    }
+
+    // Industry Sector validation
+    if (!formData.industrySector) {
+      newErrors.industrySector = 'Please select an industry sector';
+    }
+
+    // Custom Industry validation (if "Other" selected)
+    if (formData.industrySector === 'Other' && !formData.customIndustry.trim()) {
+      newErrors.customIndustry = 'Please specify your industry';
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!isValidEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    // ESG config validation
-    if (!esgConfig.location) newErrors.location = 'Location is required';
-    if (!esgConfig.industry) newErrors.industry = 'Industry is required';
-    if (!esgConfig.framework) newErrors.framework = 'Framework is required';
+    // Phone validation
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!isValidPhone(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
+  // Validation helper functions
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const isValidUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidPhone = (phone) => {
+    const phoneRegex = /^[0-9]{10,15}$/;
+    return phoneRegex.test(phone.replace(/[\s-]/g, ''));
+  };
+
+  // Handle input change
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }));
+    }
+  };
+
+  // Handle form submission
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!validateForm()) {
+  //     window.scrollTo({ top: 0, behavior: 'smooth' });
+  //     return;
+  //   }
+
+  //   setIsSubmitting(true);
+
+  //   try {
+  //     // Prepare data for backend
+  //     const registrationData = {
+  //       fullName: formData.fullName.trim(),
+  //       designation: formData.designation.trim(),
+  //       companyName: formData.companyName.trim(),
+  //       website: formData.website.trim() || null,
+  //       industrySector: formData.industrySector === 'Other' 
+  //         ? formData.customIndustry.trim() 
+  //         : formData.industrySector,
+  //       email: formData.email.trim().toLowerCase(),
+  //       phone: `${formData.countryCode}${formData.phone.trim()}`,
+  //       registrationStep: 1,
+  //       completedAt: new Date().toISOString()
+  //     };
+
+  //     // Store in sessionStorage for now (backend will use database)
+  //     sessionStorage.setItem('corporate-registration-step1', JSON.stringify(registrationData));
+
+  //     // Backend API call (ready for implementation)
+  //     console.log('API Ready - POST /api/corporate/register/step1', registrationData);
+      
+  //     /*
+  //     // Future backend implementation:
+  //     const response = await fetch('/api/corporate/register/step1', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(registrationData)
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error('Registration failed');
+  //     }
+
+  //     const data = await response.json();
+  //     // Store temporary user ID for step 2
+  //     sessionStorage.setItem('temp-user-id', data.userId);
+  //     */
+
+  //     // Navigate to step 2
+  //     setTimeout(() => {
+  //       router.push('/corporate/onboarding');
+  //     }, 500);
+
+  //   } catch (error) {
+  //     console.error('Registration error:', error);
+  //     setErrors({ submit: 'Registration failed. Please try again.' });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Your existing validation code here...
+  const newErrors = {};
+  if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+  if (!formData.designation.trim()) newErrors.designation = 'Designation is required';
+  if (!formData.companyName.trim()) newErrors.companyName = 'Company name is required';
+  if (!formData.industrySector) newErrors.industrySector = 'Industry sector is required';
+  if (!formData.email.trim()) newErrors.email = 'Email is required';
+  if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const response = await fetch('/api/corporate/register/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        formData: formData,
+      }),
+    });
+
+    const data = await response.json();
+    console.log(data)
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to send OTP');
     }
 
-    // Store registration data with improved structure for consistency
-    const registrationData = {
-      ...companyInfo,
-      location: esgConfig.location,
-      industry: esgConfig.industry,
-      framework: esgConfig.framework,
-      registeredAt: new Date().toISOString()
-    };
+    // Show OTP modal
+    setShowOTPModal(true);
 
-    // Save to localStorage for onboarding step
-    localStorage.setItem('registrationData', JSON.stringify(registrationData));
+  } catch (error) {
+    console.error('Registration error:', error);
+    setErrors({ submit: error.message });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-    // Clear any existing cart or dashboard data to start fresh
-    localStorage.removeItem('ploxi-cart');
-    localStorage.removeItem('complianceProgress');
+  const handleVerifyOTP = async (otp) => {
+  setIsVerifying(true);
+  
+  try {
+    const response = await fetch('/api/corporate/register/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        otp: otp,
+      }),
+    });
 
-    // Navigate to onboarding page
-    router.push('/corporate/onboarding');
-  };
+    const data = await response.json();
 
-  const isFormComplete = companyInfo.companyName && companyInfo.contactPerson && 
-    companyInfo.email && esgConfig.location && esgConfig.industry && esgConfig.framework;
+    if (!response.ok) {
+      throw new Error(data.error || 'Invalid OTP');
+    }
 
-  // Dropdown component (reused from LocationIndustrySelector)
-  const Dropdown = ({ type, options, selected, placeholder, disabled = false, loading = false }) => {
-    const isOpen = openDropdown === type;
-    const isCompleted = selected !== null;
-    const hasError = errors[type];
+    // Store email for Step 2
+    sessionStorage.setItem('corporate-registration-email', formData.email);
     
-    return (
-      <div className="relative">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!disabled && !loading) {
-              setOpenDropdown(isOpen ? null : type);
-            }
-          }}
-          disabled={disabled || loading}
-          className={`
-            w-full px-4 py-3 text-left bg-white border rounded-lg 
-            shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500
-            hover:border-gray-400 transition-all duration-200
-            disabled:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400
-            ${isOpen ? 'border-green-500 ring-2 ring-green-500' : ''}
-            ${isCompleted ? 'border-green-300 bg-green-50' : ''}
-            ${hasError ? 'border-red-300' : 'border-gray-300'}
-          `}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              {isCompleted && <CheckCircle className="w-4 h-4 text-green-600" />}
-              <span className={selected ? 'text-gray-900' : 'text-gray-500'}>
-                {loading ? 'Loading...' : selected?.name || placeholder}
-              </span>
-            </div>
-            <ChevronDown 
-              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                isOpen ? 'transform rotate-180' : ''
-              }`} 
-            />
-          </div>
-        </button>
-        
-        {hasError && (
-          <p className="mt-1 text-sm text-red-600">{hasError}</p>
-        )}
-        
-        {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-            {options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleEsgSelect(type, option);
-                }}
-                className={`
-                  w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-green-50 
-                  focus:text-green-900 transition-colors duration-150
-                  ${selected?.id === option.id ? 'bg-green-50 text-green-900' : 'text-gray-900'}
-                `}
-              >
-                <div>
-                  <div className="font-medium">{option.name}</div>
-                  {option.fullName && (
-                    <div className="text-sm text-gray-500 mt-1">{option.fullName}</div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+    // Close modal and redirect to Step 2 (onboarding page)
+    setShowOTPModal(false);
+    router.push('/corporate/onboarding'); // Adjust this path to your Step 2 page
+
+  } catch (error) {
+    setIsVerifying(false);
+    throw error;
+  }
+};
+
+const handleResendOTP = async () => {
+  const response = await fetch('/api/corporate/register/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: formData.email,
+      formData: formData,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to resend OTP');
+  }
+};
+
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+  <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    {/* Header */}
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             <Image
               src="https://i.postimg.cc/QM8fvftG/IMG-20250819-WA0002.jpg"
-              alt="Ploxi Consults Logo"
+              alt="Ploxi"
               width={48}
               height={48}
-              className="h-12 w-12 object-contain rounded-md"
+              className="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded-xl"
               priority
             />
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Ploxi Sustainability Platform
-              </h1>
-              <p className="text-sm md:text-base text-gray-600">
-                Corporate Registration
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Progress Bar */}
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-green-600">
-                <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                  1
-                </div>
-                <span className="text-sm font-medium">Registration</span>
-              </div>
-              <div className="w-12 h-0.5 bg-gray-300"></div>
-              <div className="flex items-center space-x-2 text-gray-400">
-                <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm font-medium">
-                  2
-                </div>
-                <span className="text-sm font-medium">Onboarding</span>
-              </div>
-              <div className="w-12 h-0.5 bg-gray-300"></div>
-              <div className="flex items-center space-x-2 text-gray-400">
-                <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm font-medium">
-                  3
-                </div>
-                <span className="text-sm font-medium">Dashboard</span>
-              </div>
+            <div className="text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Ploxi Earth</h1>
+              <p className="text-xs sm:text-sm text-gray-600">Corporate Sustainability Solutions</p>
             </div>
           </div>
         </div>
       </div>
+    </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">
-              Welcome to Ploxi Sustainability Platform
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Register your organization to access personalized ESG insights, compliance tracking, 
-              and our curated marketplace of sustainability solution providers.
-            </p>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      {/* Progress Indicator */}
+      <div className="mb-8 overflow-x-auto">
+        <div className="flex items-center justify-center space-x-3 sm:space-x-4 min-w-[350px] sm:min-w-0">
+          <div className="flex items-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
+              1
+            </div>
+            <span className="ml-2 text-xs sm:text-sm font-medium text-gray-900">Company Details</span>
+          </div>
+          <div className="w-12 sm:w-16 h-1 bg-gray-300" />
+          <div className="flex items-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold text-sm sm:text-base">
+              2
+            </div>
+            <span className="ml-2 text-xs sm:text-sm font-medium text-gray-500">ESG & Compliance</span>
+          </div>
+          <div className="w-12 sm:w-16 h-1 bg-gray-300" />
+          <div className="flex items-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold text-sm sm:text-base">
+              3
+            </div>
+            <span className="ml-2 text-xs sm:text-sm font-medium text-gray-500">Verification</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Registration Form */}
+      <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-100 p-6 sm:p-8">
+        <div className="mb-8 text-center sm:text-left">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Company Details</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Let's start with your company information</p>
+        </div>
+
+        {/* Error Alert */}
+        {errors.submit && (
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start">
+            <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+            <p className="text-red-800 text-sm sm:text-base">{errors.submit}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Full Name */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Full Name *</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                  errors.fullName ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="John Doe"
+              />
+            </div>
+            {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Company Information Section */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
-                <Building className="w-5 h-5 text-green-600" />
-                <span>Company Information</span>
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    value={companyInfo.companyName}
-                    onChange={handleCompanyInfoChange}
-                    className={`
-                      w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500
-                      ${errors.companyName ? 'border-red-300' : 'border-gray-300'}
-                    `}
-                    placeholder="Enter your company name"
-                  />
-                  {errors.companyName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 mb-2">
-                    Contact Person *
-                  </label>
-                  <input
-                    type="text"
-                    id="contactPerson"
-                    name="contactPerson"
-                    value={companyInfo.contactPerson}
-                    onChange={handleCompanyInfoChange}
-                    className={`
-                      w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500
-                      ${errors.contactPerson ? 'border-red-300' : 'border-gray-300'}
-                    `}
-                    placeholder="Enter contact person name"
-                  />
-                  {errors.contactPerson && (
-                    <p className="mt-1 text-sm text-red-600">{errors.contactPerson}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={companyInfo.email}
-                    onChange={handleCompanyInfoChange}
-                    className={`
-                      w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500
-                      ${errors.email ? 'border-red-300' : 'border-gray-300'}
-                    `}
-                    placeholder="Enter email address"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={companyInfo.phone}
-                    onChange={handleCompanyInfoChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="Enter phone number"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="employees" className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Employees
-                  </label>
-                  <select
-                    id="employees"
-                    name="employees"
-                    value={companyInfo.employees}
-                    onChange={handleCompanyInfoChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">Select company size</option>
-                    <option value="1-10">1-10 employees</option>
-                    <option value="11-50">11-50 employees</option>
-                    <option value="51-200">51-200 employees</option>
-                    <option value="201-500">201-500 employees</option>
-                    <option value="501-1000">501-1000 employees</option>
-                    <option value="1000+">1000+ employees</option>
-                  </select>
-                </div>
-              </div>
+          {/* Designation */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Designation *</label>
+            <div className="relative">
+              <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={formData.designation}
+                onChange={(e) => handleInputChange('designation', e.target.value)}
+                className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                  errors.designation ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="e.g., Sustainability Manager, CEO"
+              />
             </div>
+            {errors.designation && <p className="mt-1 text-sm text-red-600">{errors.designation}</p>}
+          </div>
 
-            {/* ESG Configuration Section */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <span>ESG Configuration</span>
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Geographic Location *
-                  </label>
-                  <Dropdown
-                    type="location"
-                    options={mockLocations}
-                    selected={esgConfig.location}
-                    placeholder="Select Location"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Industry Sector *
-                  </label>
-                  <Dropdown
-                    type="industry"
-                    options={mockIndustries}
-                    selected={esgConfig.industry}
-                    placeholder="Select Industry"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Reporting Framework *
-                  </label>
-                  <Dropdown
-                    type="framework"
-                    options={availableFrameworks}
-                    selected={esgConfig.framework}
-                    placeholder="Select Framework"
-                    disabled={!esgConfig.location}
-                    loading={isLoading}
-                  />
-                </div>
-              </div>
-
-              {/* Framework Information */}
-              {esgConfig.framework && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-1">
-                    Selected Framework: {esgConfig.framework.name}
-                  </h4>
-                  <p className="text-sm text-blue-800">
-                    {esgConfig.framework.fullName}
-                  </p>
-                </div>
-              )}
+          {/* Company Name */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Company Name *</label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={formData.companyName}
+                onChange={(e) => handleInputChange('companyName', e.target.value)}
+                className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                  errors.companyName ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Acme Corporation"
+              />
             </div>
+            {errors.companyName && <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>}
+          </div>
 
-            {/* Submit Button */}
-            <div className="pt-6 border-t border-gray-200">
-              <button
-                type="submit"
-                disabled={!isFormComplete}
-                className={`
-                  w-full flex items-center justify-center space-x-2 px-6 py-4 rounded-lg font-semibold text-lg
-                  transition-all duration-200 transform hover:scale-[1.02]
-                  ${isFormComplete 
-                    ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }
-                `}
+          {/* Website */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Website</label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="url"
+                value={formData.website}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                  errors.website ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="https://yourcompany.com"
+              />
+            </div>
+            {errors.website && <p className="mt-1 text-sm text-red-600">{errors.website}</p>}
+          </div>
+
+          {/* Industry Sector */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Industry Sector *</label>
+            <select
+              value={formData.industrySector}
+              onChange={(e) => handleInputChange('industrySector', e.target.value)}
+              className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                errors.industrySector ? 'border-red-500' : 'border-gray-300'
+              }`}
+            >
+              <option value="">Select your industry</option>
+              {INDUSTRY_SECTORS.map((sector) => (
+                <option key={sector} value={sector}>
+                  {sector}
+                </option>
+              ))}
+            </select>
+            {errors.industrySector && <p className="mt-1 text-sm text-red-600">{errors.industrySector}</p>}
+          </div>
+
+          {/* Custom Industry */}
+          {formData.industrySector === 'Other' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">Please specify your industry *</label>
+              <input
+                type="text"
+                value={formData.customIndustry}
+                onChange={(e) => handleInputChange('customIndustry', e.target.value)}
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                  errors.customIndustry ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter your industry"
+              />
+              {errors.customIndustry && <p className="mt-1 text-sm text-red-600">{errors.customIndustry}</p>}
+            </div>
+          )}
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Email ID *</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="john.doe@company.com"
+              />
+            </div>
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+          </div>
+
+          {/* Phone Number with Country Code */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Phone Number *</label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <select
+                value={formData.countryCode}
+                onChange={(e) => handleInputChange('countryCode', e.target.value)}
+                className="w-full sm:w-32 px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
               >
-                <span>Continue to Onboarding</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              
-              {!isFormComplete && (
-                <p className="text-center text-sm text-gray-500 mt-2">
-                  Please complete all required fields to continue
-                </p>
-              )}
+                {COUNTRY_CODES.map(({ code, country, flag }) => (
+                  <option key={code} value={code}>
+                    {flag} {code}
+                  </option>
+                ))}
+              </select>
+              <div className="flex-1 relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9]/g, ''))}
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500 transition-colors text-sm sm:text-base ${
+                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="9876543210"
+                  maxLength="15"
+                />
+              </div>
             </div>
-          </form>
-        </div>
-      </main>
+            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+          </div>
 
-      {/* Click outside to close dropdowns */}
-      {openDropdown && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpenDropdown(null);
-          }}
-          aria-hidden="true"
-          style={{ pointerEvents: 'auto' }}
-        />
-      )}
+          {/* Submit Button */}
+          <div className="flex justify-end pt-6 border-t-2 border-gray-100">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Continue to ESG & Compliance
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Help Section */}
+      <div className="mt-6 text-center">
+        <p className="text-xs sm:text-sm text-gray-600">
+          Need help?{' '}
+          <a href="mailto:support@ploxi.com" className="text-green-600 font-semibold hover:text-green-700">
+            Contact Support
+          </a>
+        </p>
+      </div>
     </div>
-  );
+
+    <OTPModal
+      isOpen={showOTPModal}
+      onClose={() => setShowOTPModal(false)}
+      email={formData.email}
+      onVerify={handleVerifyOTP}
+      onResend={handleResendOTP}
+      isVerifying={isVerifying}
+    />
+  </div>
+);
+
 }

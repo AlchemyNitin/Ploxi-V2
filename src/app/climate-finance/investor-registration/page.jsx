@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
+import {
   Briefcase,
   DollarSign,
   Globe,
@@ -24,10 +24,13 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+import OTPModal from '@/components/OTPModal'; // ADD THIS LINE
+
+
 // Tooltip component
 const Tooltip = ({ content }) => {
   const [show, setShow] = useState(false);
-  
+
   return (
     <div className="relative inline-block ml-2">
       <button
@@ -54,6 +57,12 @@ export default function InvestorRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
+  // ADD THESE NEW STATE VARIABLES
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+
+
   // Form state
   const [formData, setFormData] = useState({
     // Personal Information
@@ -63,7 +72,7 @@ export default function InvestorRegistration() {
     phone: '',
     linkedIn: '',
     designation: '',
-    
+
     // Organization/Fund Information
     organizationName: '',
     fundName: '',
@@ -73,7 +82,7 @@ export default function InvestorRegistration() {
     aum: '', // Assets Under Management
     fundVintage: '',
     website: '',
-    
+
     // Investment Focus
     sectors: [],
     investmentStages: [],
@@ -81,17 +90,17 @@ export default function InvestorRegistration() {
     typicalTicketSize: '',
     minInvestment: '',
     maxInvestment: '',
-    
+
     // Financing Types
     financingTypes: [],
     investmentStructures: [],
-    
+
     // ESG & Impact
     esgFocus: [],
     impactMetrics: [],
     certifications: [],
     sdgAlignment: [],
-    
+
     // Additional Details
     investmentCriteria: '',
     portfolioCompanies: '',
@@ -335,40 +344,173 @@ export default function InvestorRegistration() {
   };
 
   // Submit
-  const handleSubmit = () => {
-    if (!validateStep(4)) return;
+  // const handleSubmit = () => {
+  //   if (!validateStep(4)) return;
 
-    setIsSubmitting(true);
+  //   setIsSubmitting(true);
 
-    const profileData = {
-      ...formData,
-      profileType: 'investor',
-      status: 'active',
-      createdAt: isEditMode ? formData.createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      id: formData.id || `investor_${Date.now()}`
-    };
+  //   const profileData = {
+  //     ...formData,
+  //     profileType: 'investor',
+  //     status: 'active',
+  //     createdAt: isEditMode ? formData.createdAt : new Date().toISOString(),
+  //     updatedAt: new Date().toISOString(),
+  //     id: formData.id || `investor_${Date.now()}`
+  //   };
 
-    // Save to session storage
-    sessionStorage.setItem('investor-profile', JSON.stringify(profileData));
+  //   // Save to session storage
+  //   sessionStorage.setItem('investor-profile', JSON.stringify(profileData));
 
-    // Also add to investors list
-    const investors = JSON.parse(sessionStorage.getItem('climate-investors') || '[]');
-    const existingIndex = investors.findIndex(inv => inv.id === profileData.id);
-    if (existingIndex >= 0) {
-      investors[existingIndex] = profileData;
-    } else {
-      investors.push(profileData);
+  //   // Also add to investors list
+  //   const investors = JSON.parse(sessionStorage.getItem('climate-investors') || '[]');
+  //   const existingIndex = investors.findIndex(inv => inv.id === profileData.id);
+  //   if (existingIndex >= 0) {
+  //     investors[existingIndex] = profileData;
+  //   } else {
+  //     investors.push(profileData);
+  //   }
+  //   sessionStorage.setItem('climate-investors', JSON.stringify(investors));
+
+  //   // API ready
+  //   console.log('API Ready - POST /api/investors/profile', profileData);
+
+  //   setTimeout(() => {
+  //     setIsSubmitting(false);
+  //     setStep(5); // Success
+  //   }, 2000);
+  // };
+
+const handleSubmit = async () => {
+  if (!validateStep(4)) {
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // Call send-otp API with complete form data
+    const response = await fetch('/api/climate-finance/investor/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        formData: {
+          // Personal
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+          linkedin_url: formData.linkedIn,
+          designation: formData.designation,
+          
+          // Organization
+          organization_name: formData.organizationName,
+          fund_name: formData.fundName,
+          organization_type: formData.organizationType,
+          fund_size: formData.fundSize,
+          fund_size_range: formData.fundSizeRange,
+          aum: formData.aum,
+          fund_vintage: formData.fundVintage,
+          website: formData.website,
+          
+          // Investment Focus
+          sectors_of_interest: formData.sectors,
+          investment_stages: formData.investmentStages,
+          geographic_focus: formData.geographicFocus,
+          typical_ticket_size: formData.typicalTicketSize,
+          min_investment: formData.minInvestment,
+          max_investment: formData.maxInvestment,
+          
+          // Financing
+          financing_types: formData.financingTypes,
+          investment_structures: formData.investmentStructures,
+          
+          // ESG
+          esg_focus: formData.esgFocus,
+          impact_metrics: formData.impactMetrics,
+          certifications: formData.certifications,
+          sdg_alignment: formData.sdgAlignment,
+          
+          // Additional
+          investment_criteria: formData.investmentCriteria,
+          portfolio_companies: formData.portfolioCompanies,
+          recent_investments: formData.recentInvestments,
+          value_add: formData.valueAdd,
+          decision_timeline: formData.decisionTimeline,
+          due_diligence_process: formData.dueDiligenceProcess,
+        },
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to send OTP');
     }
-    sessionStorage.setItem('climate-investors', JSON.stringify(investors));
 
-    // API ready
-    console.log('API Ready - POST /api/investors/profile', profileData);
+    // Show OTP modal
+    setShowOTPModal(true);
+    setIsSubmitting(false);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setStep(5); // Success
-    }, 2000);
+  } catch (error) {
+    console.error('Registration error:', error);
+    alert(error.message || 'Failed to send OTP. Please try again.');
+    setIsSubmitting(false);
+  }
+};
+
+const handleResendOTP = async () => {
+  const response = await fetch('/api/climate-finance/investor/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: formData.email,
+      formData: {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        organization_name: formData.organizationName,
+        organization_type: formData.organizationType,
+        // Add minimal required fields
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to resend OTP');
+  }
+};
+
+
+  const handleVerifyOTP = async (otp) => {
+    setIsVerifying(true);
+
+    try {
+      const response = await fetch('/api/climate-finance/register/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          otp: otp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Invalid OTP');
+      }
+
+      // Close modal and show success step
+      setShowOTPModal(false);
+      setStep(5); // Your existing success step
+
+      // Clear any stored data
+      sessionStorage.removeItem('investor-profile');
+
+    } catch (error) {
+      setIsVerifying(false);
+      throw error; // OTP Modal will handle the error display
+    }
   };
 
   return (
@@ -410,7 +552,7 @@ export default function InvestorRegistration() {
             <Info className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-gray-300 text-sm">
-                <strong className="text-purple-300">Complete your investor profile</strong> to access funding opportunities, 
+                <strong className="text-purple-300">Complete your investor profile</strong> to access funding opportunities,
                 connect with clean tech ventures, and showcase your fund to the ecosystem.
               </p>
             </div>
@@ -431,11 +573,10 @@ export default function InvestorRegistration() {
               ].map((s, idx) => (
                 <React.Fragment key={s.num}>
                   <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                      step >= s.num 
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${step >= s.num
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                         : 'bg-gray-800 text-gray-500 border-2 border-gray-700'
-                    }`}>
+                      }`}>
                       {step > s.num ? <CheckCircle className="w-5 h-5" /> : s.num}
                     </div>
                     <span className={`text-xs mt-2 ${step >= s.num ? 'text-purple-400' : 'text-gray-600'}`}>
@@ -479,9 +620,8 @@ export default function InvestorRegistration() {
                         setFormData(prev => ({ ...prev, firstName: e.target.value }));
                         if (errors.firstName) setErrors(prev => ({ ...prev, firstName: null }));
                       }}
-                      className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${
-                        errors.firstName ? 'border-red-500' : 'border-gray-700'
-                      }`}
+                      className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${errors.firstName ? 'border-red-500' : 'border-gray-700'
+                        }`}
                       placeholder="John"
                     />
                     {errors.firstName && <p className="mt-1 text-sm text-red-400">{errors.firstName}</p>}
@@ -498,9 +638,8 @@ export default function InvestorRegistration() {
                         setFormData(prev => ({ ...prev, lastName: e.target.value }));
                         if (errors.lastName) setErrors(prev => ({ ...prev, lastName: null }));
                       }}
-                      className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${
-                        errors.lastName ? 'border-red-500' : 'border-gray-700'
-                      }`}
+                      className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${errors.lastName ? 'border-red-500' : 'border-gray-700'
+                        }`}
                       placeholder="Doe"
                     />
                     {errors.lastName && <p className="mt-1 text-sm text-red-400">{errors.lastName}</p>}
@@ -519,9 +658,8 @@ export default function InvestorRegistration() {
                           setFormData(prev => ({ ...prev, email: e.target.value }));
                           if (errors.email) setErrors(prev => ({ ...prev, email: null }));
                         }}
-                        className={`w-full pl-11 pr-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${
-                          errors.email ? 'border-red-500' : 'border-gray-700'
-                        }`}
+                        className={`w-full pl-11 pr-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${errors.email ? 'border-red-500' : 'border-gray-700'
+                          }`}
                         placeholder="john@fund.com"
                       />
                     </div>
@@ -589,9 +727,8 @@ export default function InvestorRegistration() {
                           setFormData(prev => ({ ...prev, organizationName: e.target.value }));
                           if (errors.organizationName) setErrors(prev => ({ ...prev, organizationName: null }));
                         }}
-                        className={`w-full pl-11 pr-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${
-                          errors.organizationName ? 'border-red-500' : 'border-gray-700'
-                        }`}
+                        className={`w-full pl-11 pr-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${errors.organizationName ? 'border-red-500' : 'border-gray-700'
+                          }`}
                         placeholder="Your fund/organization"
                       />
                     </div>
@@ -609,9 +746,8 @@ export default function InvestorRegistration() {
                         setFormData(prev => ({ ...prev, organizationType: e.target.value }));
                         if (errors.organizationType) setErrors(prev => ({ ...prev, organizationType: null }));
                       }}
-                      className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${
-                        errors.organizationType ? 'border-red-500' : 'border-gray-700'
-                      }`}
+                      className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 text-white ${errors.organizationType ? 'border-red-500' : 'border-gray-700'
+                        }`}
                     >
                       <option value="">Select type</option>
                       {ORGANIZATION_TYPES.map(type => (
@@ -724,11 +860,10 @@ export default function InvestorRegistration() {
                   {SECTORS.map(sector => (
                     <label
                       key={sector}
-                      className={`p-3 border-2 rounded-lg cursor-pointer text-center transition-all ${
-                        formData.sectors.includes(sector)
+                      className={`p-3 border-2 rounded-lg cursor-pointer text-center transition-all ${formData.sectors.includes(sector)
                           ? 'border-purple-500 bg-purple-500/10 text-purple-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -757,11 +892,10 @@ export default function InvestorRegistration() {
                   {INVESTMENT_STAGES.map(stage => (
                     <label
                       key={stage}
-                      className={`p-3 border-2 rounded-lg cursor-pointer text-center transition-all ${
-                        formData.investmentStages.includes(stage)
+                      className={`p-3 border-2 rounded-lg cursor-pointer text-center transition-all ${formData.investmentStages.includes(stage)
                           ? 'border-blue-500 bg-blue-500/10 text-blue-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -790,11 +924,10 @@ export default function InvestorRegistration() {
                   {GEOGRAPHIC_REGIONS.map(region => (
                     <label
                       key={region.value}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                        formData.geographicFocus.includes(region.value)
+                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.geographicFocus.includes(region.value)
                           ? 'border-green-500 bg-green-500/10'
                           : 'border-gray-700 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -909,11 +1042,10 @@ export default function InvestorRegistration() {
                   {FINANCING_TYPES.map(type => (
                     <label
                       key={type}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        formData.financingTypes.includes(type)
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.financingTypes.includes(type)
                           ? 'border-green-500 bg-green-500/10 text-green-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -937,11 +1069,10 @@ export default function InvestorRegistration() {
                   {INVESTMENT_STRUCTURES.map(structure => (
                     <label
                       key={structure}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        formData.investmentStructures.includes(structure)
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.investmentStructures.includes(structure)
                           ? 'border-blue-500 bg-blue-500/10 text-blue-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -1048,11 +1179,10 @@ export default function InvestorRegistration() {
                   {ESG_FOCUS_AREAS.map(area => (
                     <label
                       key={area}
-                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                        formData.esgFocus.includes(area)
+                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${formData.esgFocus.includes(area)
                           ? 'border-green-500 bg-green-500/10 text-green-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -1076,11 +1206,10 @@ export default function InvestorRegistration() {
                   {IMPACT_METRICS.map(metric => (
                     <label
                       key={metric}
-                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                        formData.impactMetrics.includes(metric)
+                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${formData.impactMetrics.includes(metric)
                           ? 'border-blue-500 bg-blue-500/10 text-blue-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -1104,11 +1233,10 @@ export default function InvestorRegistration() {
                   {SDG_GOALS.map(sdg => (
                     <label
                       key={sdg.number}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        formData.sdgAlignment.includes(sdg.number)
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.sdgAlignment.includes(sdg.number)
                           ? 'border-purple-500 bg-purple-500/10'
                           : 'border-gray-700 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -1137,11 +1265,10 @@ export default function InvestorRegistration() {
                   {CERTIFICATIONS.map(cert => (
                     <label
                       key={cert}
-                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                        formData.certifications.includes(cert)
+                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${formData.certifications.includes(cert)
                           ? 'border-yellow-500 bg-yellow-500/10 text-yellow-300'
                           : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -1171,8 +1298,8 @@ export default function InvestorRegistration() {
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Saving...
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Sending OTP...
                   </>
                 ) : (
                   <>
@@ -1181,6 +1308,7 @@ export default function InvestorRegistration() {
                   </>
                 )}
               </button>
+
             </div>
           </div>
         )}
@@ -1232,7 +1360,16 @@ export default function InvestorRegistration() {
             </div>
           </div>
         )}
+        
       </div>
+      <OTPModal
+          isOpen={showOTPModal}
+          onClose={() => setShowOTPModal(false)}
+          email={formData.email}
+          onVerify={handleVerifyOTP}
+          onResend={handleResendOTP}
+          isVerifying={isVerifying}
+        />
     </div>
   );
 }

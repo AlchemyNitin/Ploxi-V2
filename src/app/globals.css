@@ -25,3 +25,11 @@ body {
     text-wrap: balance;
   }
 }
+
+input, select, textarea {
+  color: #111827; /* Tailwind's gray-900 */
+}
+
+::placeholder {
+  color: #9CA3AF; /* Tailwind's gray-400 */
+}
