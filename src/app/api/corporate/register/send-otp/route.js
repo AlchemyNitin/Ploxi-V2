@@ -63,9 +63,9 @@ export async function POST(request) {
     // Send OTP via Supabase Auth
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        shouldCreateUser: false,
-      },
+      // options: {
+      //   shouldCreateUser: false,
+      // },
     });
 
     if (otpError) {
